@@ -53,5 +53,5 @@ def export_content(reddit: praw.Reddit, settings: Settings):
         else:
             user_submitted_content_file.write("\nNo user submitted comments found on Reddit to export.")
             user_submitted_content_file.write("\n---------------------------------------------------------------------------------------------------------------------------------------------------")
-
-    print("\nFinished retrieving and saving user submitted comments...")
+            
+        print("\nFinished retrieving and saving user submitted comments...")
