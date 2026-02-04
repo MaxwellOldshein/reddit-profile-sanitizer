@@ -12,12 +12,8 @@ def get_reddit_client(settings: Settings) -> praw.reddit:
             user_agent=settings.user_agent,
             validate_on_submit=True # Supress DeprecationWarning for validation checking when editing content.
         )
-        
-        shouldProceedInput = input(f"Located provided refresh token for /u/{reddit.user.me()}. Would you like to proceed with that that? (Y/N): ")
 
-        if shouldProceedInput.upper() != "Y":
-            print("Exiting process without proceeding. To clear this user, remove the REFRESH_TOKEN variable from your .env file before trying again for a new user.")
-            exit(1)
+        print(f"Using REFRESH_TOKEN for /u/{reddit.user.me()}.")
         
         return reddit
     
