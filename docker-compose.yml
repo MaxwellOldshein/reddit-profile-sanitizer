@@ -1,0 +1,10 @@
+services:
+  sanitizer:
+    build: .
+    env_file: .env
+    volumes:
+      - ./data:/app/data # Storage location to persist old user comments/post data from Reddit.
+    stdin_open: true # Enables stdin input usage.
+    tty: true # Enables TTY/prompts usage.
+    environment:
+      - PYTHONUNBUFFERED=1
