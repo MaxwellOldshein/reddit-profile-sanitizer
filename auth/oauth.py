@@ -1,6 +1,5 @@
 from urllib.parse import urlparse, parse_qs
 import praw
-from pathlib import Path
 
 from config.settings import Settings
 
