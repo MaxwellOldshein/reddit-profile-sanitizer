@@ -1,11 +1,15 @@
 from urllib.parse import urlparse, parse_qs
-import praw
+from praw import exceptions, Reddit
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 from config.settings import Settings
 
+@retry(stop=stop_after_attempt(5), 
+        wait=wait_exponential(multiplier=1, min=4, max=60), 
+        retry=retry_if_exception_type(exceptions.APIException))
 def authorize_new_reddit_user(settings: Settings) -> str:
     # Unauthenticated Reddit client to authenticate the user.
-    reddit = praw.Reddit(
+    reddit = Reddit(
         client_id=settings.client_id,
         client_secret=None,
         redirect_uri=settings.redirect_uri,

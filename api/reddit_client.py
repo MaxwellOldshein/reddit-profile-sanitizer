@@ -1,10 +1,14 @@
-import praw
 from auth.oauth import authorize_new_reddit_user
 from config.settings import Settings
+from praw import exceptions, Reddit, reddit
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
-def get_reddit_client(settings: Settings) -> praw.reddit:
+@retry(stop=stop_after_attempt(5), 
+        wait=wait_exponential(multiplier=1, min=4, max=60), 
+        retry=retry_if_exception_type(exceptions.APIException))
+def get_reddit_client(settings: Settings) -> reddit:
     if settings.refresh_token:
-        reddit = praw.Reddit(
+        reddit = Reddit(
             client_id=settings.client_id,
             client_secret=None,
             refresh_token=settings.refresh_token,
@@ -21,7 +25,7 @@ def get_reddit_client(settings: Settings) -> praw.reddit:
 
     new_refresh_token = authorize_new_reddit_user(settings)
 
-    return praw.Reddit(
+    return Reddit(
         client_id=settings.client_id,
         client_secret=None,
         refresh_token=new_refresh_token,
