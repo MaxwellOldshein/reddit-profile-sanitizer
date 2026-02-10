@@ -24,7 +24,7 @@ def scrub_content(reddit: Reddit):
         if post.is_self:
             # Update the text of the post to conceal its original contents prior to deletion.
             post.edit(f"[deleted] {datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')}")
-        time.sleep(1)
+            time.sleep(1)
             
         # Delete the post so that it no longer exists.
         post.delete()
