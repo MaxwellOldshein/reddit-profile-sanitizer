@@ -1,22 +1,36 @@
 from config.settings import Settings
 from datetime import datetime
 from praw import exceptions, Reddit
+from prawcore.exceptions import TooManyRequests
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import time
 
 @retry(stop=stop_after_attempt(5), 
         wait=wait_exponential(multiplier=1, min=4, max=60), 
-        retry=retry_if_exception_type(exceptions.APIException))
+        retry=retry_if_exception_type(exceptions.RedditAPIException, TooManyRequests))
 def export_content(reddit: Reddit, settings: Settings):
     try:
         user_posts = list(reddit.user.me().submissions.new(limit=1000))
+    except exceptions.RedditAPIException:
+        print(f"Failed to retrieve user's posts due to API-related exception. Retrying...")
+        raise # Trigger the back off retry logic above for any API-related PRAW exception.
+    except TooManyRequests as e:
+        print(f"Failed to retrieve user's posts due to rate-limiting. Retrying...")
+        raise # Trigger the back off retry logic above any rate-limiting related exception.
     except Exception as e:
-        print(f"Failed to retrieve user's posts: {e}. Continuing on without them...")
+        print(f"Failed to retrieve user's posts due to fatal exception: {e}. Continuing on without them...")
         user_posts = []
+
     try:
         user_comments = list(reddit.user.me().comments.new(limit=1000))
+    except exceptions.RedditAPIException:
+        print(f"Failed to retrieve user's comments due to API-related exception. Retrying...")
+        raise # Trigger the back off retry logic above for any API-related PRAW exception.
+    except TooManyRequests as e:
+        print(f"Failed to retrieve user's comments due to rate-limiting. Retrying...")
+        raise # Trigger the back off retry logic above any rate-limiting related exception.
     except Exception as e:
-        print(f"Failed to retrieve user's comments: {e}. Continuing on without them...")
+        print(f"Failed to retrieve user's comments due to fatal exception: {e}. Continuing on without them...")
         user_comments = []
 
     # Create text file to store a backup of the most recent version of the user's submitted posts/comments for later review potentially or local storage.
